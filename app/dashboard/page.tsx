@@ -44,11 +44,7 @@ export default function Dashboard() {
 
   async function complete(action: "comment" | "post" | "dm") {
     const xpMap = { comment: 50, post: 120, dm: 70 } as const;
-    const reasonMap = {
-      comment: "Comment with value",
-      post: "Outcome-led post",
-      dm: "Warm DM"
-    } as const;
+    const reasonMap = { comment: "Comment with value", post: "Outcome-led post", dm: "Warm DM" } as const;
     setLoading(true);
     try {
       const res = await fetch("/api/profile", {
@@ -57,10 +53,8 @@ export default function Dashboard() {
         body: JSON.stringify({ deltaXp: xpMap[action], reason: reasonMap[action] })
       });
       const json = await res.json();
-      if (json?.ok) {
-        setXp(json.profile?.xp || 0);
-      }
-    } catch { /* ignore */ }
+      if (json?.ok) setXp(json.profile?.xp || 0);
+    } catch {}
     setLoading(false);
   }
 
@@ -68,15 +62,15 @@ export default function Dashboard() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Welcome, {name}</h1>
-        <a className="btn" href="/account">Account & preferences</a>
+        <a className="btn" href="/account">Account</a>
       </div>
 
       {total === 0 && (
-        <div className="card p-4 border-accent">
+        <div className="card p-4 border border-gray-200">
           <div className="flex items-center justify-between gap-3">
             <div>
               <div className="font-semibold">Set your SSI to personalise your plan</div>
-              <p className="text-sm text-ink-700">Open LinkedIn’s SSI page, then enter your 4 pillar scores (0–25 each).</p>
+              <p className="text-sm text-gray-700">Open LinkedIn’s SSI page, then enter your 4 pillar scores (0–25 each).</p>
             </div>
             <a className="btn" href="https://www.linkedin.com/sales/ssi" target="_blank" rel="noreferrer">Open SSI</a>
           </div>

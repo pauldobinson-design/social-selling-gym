@@ -1,3 +1,7 @@
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
 
@@ -10,7 +14,8 @@ export async function POST(req: Request) {
   if (!client) return NextResponse.json({ ok: false, message: "No AI key set" });
 
   const prompt = [
-    `Give concise feedback for kind="${kind}".`,
+    `Give concise, practical feedback for kind="${kind}".`,
+    "Focus on clarity, personalisation, and outcomes.",
     "Return JSON { summary:string, nextActions:string[] }.",
     `Text: """${body}"""`
   ].join("\n");
@@ -22,11 +27,13 @@ export async function POST(req: Request) {
     response_format: { type: "json_object" }
   });
 
-  const out = res.output_text || (res as any).output?.[0]?.content?.[0]?.text || "{}";
+  const out = (res as any).output_text || (res as any).output?.[0]?.content?.[0]?.text || "{}";
   let data: any = {};
   try { data = JSON.parse(out); } catch { data = {}; }
 
-  const summary = String(data.summary || "").slice(0, 1000);
-  const nextActions = Array.isArray(data.nextActions) ? data.nextActions.slice(0, 5) : [];
-  return NextResponse.json({ ok: true, summary, nextActions });
+  return NextResponse.json({
+    ok: true,
+    summary: String(data.summary || "").slice(0, 1000),
+    nextActions: Array.isArray(data.nextActions) ? data.nextActions.slice(0, 5) : []
+  });
 }

@@ -1,32 +1,34 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-import { Analytics } from "@vercel/analytics/next"
-import { Header } from "@/components/header"
-import { Navigation } from "@/components/navigation"
-import "./globals.css"
+import type { Metadata } from "next";
+import "./globals.css";
+import { Inter } from "next/font/google";
+import { Header } from "@/components/header";
+import { MockAuthProvider } from "@/lib/mock-auth";
 
-const inter = Inter({ subsets: ["latin"] })
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Social Selling Gym - Master Your Sales Skills",
-  description: "Gamified platform for practising social selling with AI feedback",
-  generator: "v0.app",
-}
+  title: "Social Selling Gym",
+  description: "Practise social selling with challenges, coaching, and progress tracking."
+};
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-GB">
-      <body className={`${inter.className} font-sans antialiased`}>
-        <Header />
-        <Navigation />
-        {children}
-        <Analytics />
+    <html lang="en">
+      <body className={inter.className}>
+        <MockAuthProvider>
+          <Header />
+          <main className="container py-8">{children}</main>
+          <footer className="container py-8 text-sm text-ink-500">
+            <div className="flex items-center gap-3">
+              <span>Developer tools</span>
+              <form action="/api/toggle-mock" method="post">
+                <button className="btn">Toggle Mock Login</button>
+              </form>
+              <span className="ml-auto">Built with Next.js and Tailwind</span>
+            </div>
+          </footer>
+        </MockAuthProvider>
       </body>
     </html>
-  )
+  );
 }

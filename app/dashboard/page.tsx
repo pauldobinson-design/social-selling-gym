@@ -15,6 +15,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [ssi, setSsi] = useState<SSI>({ brand: 0, people: 0, insights: 0, relationships: 0 });
   const [xp, setXp] = useState(0);
+  const [err, setErr] = useState<string | null>(null);
 
   const name = session?.user?.name ?? "guest";
   const total = ssi.brand + ssi.people + ssi.insights + ssi.relationships;
@@ -23,15 +24,25 @@ export default function Dashboard() {
   useEffect(() => {
     let active = true;
     (async () => {
+      setErr(null);
       try {
-        const res = await fetch("/api/profile");
+        const res = await fetch("/api/profile", { cache: "no-store" });
+        if (res.status === 401) {
+          // not signed in — render guest view cleanly
+          setLoading(false);
+          return;
+        }
         const json = await res.json();
         if (!active) return;
         if (json?.ok) {
           setSsi(json.profile?.ssi || { brand: 0, people: 0, insights: 0, relationships: 0 });
           setXp(json.profile?.xp || 0);
+        } else {
+          setErr(json?.message || "Profile unavailable");
         }
-      } catch { /* ignore */ }
+      } catch (e: any) {
+        setErr("Network error");
+      }
       setLoading(false);
     })();
     return () => { active = false; };
@@ -46,15 +57,20 @@ export default function Dashboard() {
     const xpMap = { comment: 50, post: 120, dm: 70 } as const;
     const reasonMap = { comment: "Comment with value", post: "Outcome-led post", dm: "Warm DM" } as const;
     setLoading(true);
+    setErr(null);
     try {
       const res = await fetch("/api/profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ deltaXp: xpMap[action], reason: reasonMap[action] })
+        body: JSON.stringify({ deltaXp: xpMap[action], reason: reasonMap[action] }),
+        cache: "no-store"
       });
       const json = await res.json();
       if (json?.ok) setXp(json.profile?.xp || 0);
-    } catch {}
+      else setErr(json?.message || "Could not update XP");
+    } catch {
+      setErr("Network error");
+    }
     setLoading(false);
   }
 
@@ -64,6 +80,8 @@ export default function Dashboard() {
         <h1 className="text-2xl font-bold">Welcome, {name}</h1>
         <a className="btn" href="/account">Account</a>
       </div>
+
+      {err && <div className="card p-3 text-sm text-red-600">Error: {err}</div>}
 
       {total === 0 && (
         <div className="card p-4 border border-gray-200">

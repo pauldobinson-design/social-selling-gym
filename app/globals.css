@@ -2,36 +2,130 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Minimal, Tailwind v3-safe globals */
+/* ---------- Base ---------- */
 :root {
   color-scheme: light;
+}
+
+html, body {
+  height: 100%;
 }
 
 body {
   @apply bg-white text-ink-900;
   font-feature-settings: "rlig" 1, "calt" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-.container {
-  @apply mx-auto max-w-6xl px-4 sm:px-6 lg:px-8;
+a {
+  @apply text-primary underline-offset-2 hover:underline;
 }
 
-.card {
-  @apply rounded-xl shadow-card border border-ink-100 bg-white;
+img, svg, video, canvas {
+  display: block;
+  max-width: 100%;
 }
 
-.btn {
-  @apply inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-medium border border-ink-100 shadow-sm;
+/* ---------- Components / Utilities ---------- */
+@layer components {
+  /* Layout */
+  .container {
+    @apply mx-auto max-w-6xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .card {
+    @apply rounded-xl bg-white border border-ink-100 shadow-card;
+  }
+
+  /* Buttons */
+  .btn {
+    @apply inline-flex items-center justify-center rounded-xl border border-ink-100 px-4 py-2 text-sm font-medium shadow-sm transition
+           hover:bg-ink-100/40 focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-60 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-white font-semibold px-5 py-2.5 rounded-xl shadow-card hover:opacity-95
+           focus:outline-none focus:ring-2 focus:ring-primary/40;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent border-transparent text-ink-700 hover:bg-ink-100/40;
+  }
+
+  /* Inputs */
+  .input {
+    @apply w-full rounded-xl border border-ink-300 bg-white px-3 py-2 text-sm text-ink-900
+           outline-none focus:ring-2 focus:ring-primary/40;
+  }
+
+  .label {
+    @apply block mb-1 text-sm font-medium text-ink-700;
+  }
+
+  .select {
+    @apply input appearance-none pr-8;
+  }
+
+  .textarea {
+    @apply input min-h-[8rem];
+  }
+
+  /* Chips / Badges */
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full bg-ink-100 px-3 py-1 text-xs text-ink-700;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-md border border-ink-200 bg-ink-100 px-2 py-0.5 text-[11px] font-medium text-ink-700;
+  }
+
+  /* Headings rhythm */
+  .h1 {
+    @apply text-2xl font-bold;
+  }
+  .h2 {
+    @apply text-xl font-semibold;
+  }
+  .subtle {
+    @apply text-sm text-ink-700;
+  }
+
+  /* Tables (if needed later) */
+  .table {
+    @apply w-full text-sm;
+  }
+  .table thead th {
+    @apply text-left font-semibold text-ink-700 border-b border-ink-100 pb-2;
+  }
+  .table tbody td {
+    @apply py-2 border-b border-ink-100;
+  }
 }
 
-.btn-primary {
-  @apply bg-primary text-white hover:opacity-95;
+/* ---------- Page-level helpers ---------- */
+.header {
+  @apply border-b border-ink-100;
 }
 
-.input {
-  @apply w-full rounded-xl border border-ink-300 px-3 py-2 outline-none focus:ring-2 focus:ring-primary;
+.kpis {
+  @apply grid grid-cols-1 sm:grid-cols-3 gap-4;
 }
 
-.label {
-  @apply text-sm font-medium text-ink-700;
+.kpi-card {
+  @apply card p-4;
+}
+
+.section {
+  @apply card p-4;
+}
+
+/* ---------- Dark mode (optional scaffold) ---------- */
+@media (prefers-color-scheme: dark) {
+  :root { color-scheme: dark; }
+  body { @apply bg-ink-900 text-ink-100; }
+  .card { @apply bg-ink-900 border-ink-700; }
+  .btn { @apply border-ink-700 text-ink-100; }
+  .input { @apply bg-ink-900 border-ink-700 text-ink-100; }
+  .badge { @apply bg-ink-700 border-ink-700 text-ink-100; }
 }

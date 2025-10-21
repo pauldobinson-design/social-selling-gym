@@ -1,3 +1,4 @@
+// components/challenge-card.tsx
 import Link from "next/link";
 
 export type Challenge = {
@@ -10,7 +11,7 @@ export type Challenge = {
   xp: number;
 };
 
-export default function ChallengeCard({ c }: { c: Challenge }) {
+export function ChallengeCard({ c }: { c: Challenge }) {
   return (
     <div className="card p-4 flex flex-col gap-2">
       <div className="text-sm text-ink-500">{c.level} • {c.channel} • {c.time}</div>
@@ -23,3 +24,5 @@ export default function ChallengeCard({ c }: { c: Challenge }) {
     </div>
   );
 }
+
+export default ChallengeCard;

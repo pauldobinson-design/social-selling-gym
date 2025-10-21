@@ -1,4 +1,8 @@
 // app/api/profile/route.ts
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/db/supabase";
 import { getServerSession } from "next-auth";
@@ -9,8 +13,15 @@ export async function GET() {
   const email = session?.user?.email;
   if (!email) return NextResponse.json({ ok: false, message: "Not signed in" }, { status: 401 });
 
-  const { data, error } = await supabaseAdmin.from("profiles").select("*").eq("user_email", email).maybeSingle();
-  if (error) return NextResponse.json({ ok: false, message: error.message }, { status: 500 });
+  const { data, error } = await supabaseAdmin
+    .from("profiles")
+    .select("*")
+    .eq("user_email", email)
+    .maybeSingle();
+
+  if (error) {
+    return NextResponse.json({ ok: false, message: `DB error: ${error.message}` }, { status: 500 });
+  }
 
   return NextResponse.json({
     ok: true,
@@ -33,11 +44,13 @@ export async function POST(req: Request) {
       (n: any) => Number.isFinite(Number(n)) && Number(n) >= 0 && Number(n) <= 25
     );
 
-  const { data: existing } = await supabaseAdmin
+  const { data: existing, error: readErr } = await supabaseAdmin
     .from("profiles")
     .select("*")
     .eq("user_email", email)
     .maybeSingle();
+
+  if (readErr) return NextResponse.json({ ok: false, message: `DB read error: ${readErr.message}` }, { status: 500 });
 
   const updates: any = {
     user_email: email,
@@ -59,7 +72,7 @@ export async function POST(req: Request) {
     .select()
     .maybeSingle();
 
-  if (error) return NextResponse.json({ ok: false, message: error.message }, { status: 500 });
+  if (error) return NextResponse.json({ ok: false, message: `DB write error: ${error.message}` }, { status: 500 });
 
   if (deltaXp) {
     await supabaseAdmin.from("xp_events").insert({

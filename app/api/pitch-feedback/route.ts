@@ -1,26 +1,24 @@
 // app/api/pitch-feedback/route.ts
+import OpenAI from "openai";
 import { NextResponse } from "next/server";
 
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
 export async function POST(req: Request) {
-  let body: any = {};
-  try { body = await req.json(); } catch {}
+  const { pitch } = await req.json();
+  if (!pitch) return NextResponse.json({ error: "Missing pitch" }, { status: 400 });
 
-  const pitch = typeof body?.pitch === "string" ? body.pitch : "";
-  if (!pitch) {
-    return NextResponse.json({ ok: false, message: "Missing 'pitch'." }, { status: 400 });
-  }
+  const prompt = `Rate this sales elevator pitch from 1-100 for clarity, relevance, and engagement. 
+Return JSON: {score, tips}. Pitch: """${pitch}"""`;
 
-  // Simple placeholder scoring so build works without external SDKs.
-  const words = pitch.trim().split(/\s+/).filter(Boolean).length;
-  const score = Math.max(40, Math.min(100, 75 + Math.floor((200 - Math.abs(200 - words)) / 20)));
-
-  return NextResponse.json({
-    ok: true,
-    score,
-    tips: [
-      "Tighten your hook to one sentence.",
-      "Swap vague claims for a number.",
-      "Close with a single clear CTA."
-    ]
+  const res = await client.responses.create({
+    model: "gpt-4o-mini",
+    input: prompt,
+    response_format: { type: "json_object" },
   });
+
+  const data = JSON.parse(res.output[0].content[0].text);
+  return NextResponse.json(data);
 }

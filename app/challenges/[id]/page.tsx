@@ -6,20 +6,19 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { CHALLENGES } from "@/data/challenges";
-import AIFeedback from "@/components/ai-feedback";
-import ResourceLinks from "@/components/resource-links";
 
 export default function ChallengeDetail() {
   const { id } = useParams<{ id: string }>();
   const c = (Array.isArray(CHALLENGES) ? CHALLENGES : []).find((x) => x?.id === id);
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
 
   if (!c) {
     return (
       <div className="space-y-4">
         <h1 className="text-2xl font-bold">Challenge not found</h1>
-        <p className="text-gray-700">That ID is not available.</p>
+        <p className="text-gray-700">That ID isn’t in the current challenge set.</p>
         <Link className="btn" href="/challenges">Back to Challenges</Link>
       </div>
     );
@@ -27,29 +26,22 @@ export default function ChallengeDetail() {
 
   async function markComplete() {
     setSaving(true);
+    setErr(null);
     try {
       const res = await fetch("/api/profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ deltaXp: c.xp, reason: `Completed: ${c.title}` })
+        body: JSON.stringify({ deltaXp: c.xp, reason: `Completed: ${c.title}` }),
+        cache: "no-store",
       });
-      const ok = (await res.json())?.ok;
-      if (ok) setDone(true);
-    } catch { /* ignore */ }
+      const json = await res.json();
+      if (json?.ok) setDone(true);
+      else setErr(json?.message || "Could not credit XP");
+    } catch {
+      setErr("Network error");
+    }
     setSaving(false);
   }
-
-  const kind = c.channel === "LinkedIn"
-    ? (c.outcome === "Meeting" ? "post" : "dm")
-    : c.channel === "Email"
-    ? "dm"
-    : "general";
-
-  const seed =
-    c.example ||
-    (c.steps && c.steps.length
-      ? `${c.title}\n\n${c.steps.map((s, i) => `${i + 1}. ${s}`).join("\n")}\n\nDraft here…`
-      : "");
 
   return (
     <div className="space-y-6">
@@ -57,11 +49,13 @@ export default function ChallengeDetail() {
         <h1 className="text-2xl font-bold">{c.title}</h1>
         <div className="flex gap-2">
           <button className="btn btn-primary" onClick={markComplete} disabled={saving || done}>
-            {done ? "Marked done ✓" : saving ? "Saving..." : `Mark complete (+${c.xp} XP)`}
+            {done ? "Marked done ✓" : saving ? "Saving…" : `Mark complete (+${c.xp} XP)`}
           </button>
           <Link className="btn" href="/challenges">Back</Link>
         </div>
       </div>
+
+      {err && <div className="card p-3 text-sm text-red-600">Error: {err}</div>}
 
       <div className="text-sm text-gray-500">{c.level} • {c.channel} • {c.time} • XP {c.xp}</div>
       <p className="text-gray-700">{c.objective}</p>
@@ -76,14 +70,36 @@ export default function ChallengeDetail() {
       <div className="card p-4">
         <h2 className="text-lg font-semibold">Steps</h2>
         <ol className="list-decimal pl-5 space-y-2">
-          {c.steps.map((s, i) => (
-            <li key={i}>{s}</li>
-          ))}
+          {c.steps.map((s, i) => <li key={i}>{s}</li>)}
         </ol>
       </div>
 
-      <AIFeedback kind={kind as any} seed={seed} />
-      <ResourceLinks tags={c.tags} />
+      <div className="card p-4 space-y-2">
+        <h3 className="text-lg font-semibold">Learn more</h3>
+        <ul className="list-disc pl-5 text-sm">
+          {c.tags?.includes("relationships") && (
+            <>
+              <li><a href="https://copywritingcourse.com/linkedin-messages/" target="_blank" rel="noreferrer">Warm DM templates</a></li>
+              <li><a href="https://www.apollo.io/blog/linkedin-inmail-vs-dm/" target="_blank" rel="noreferrer">From comment to DM</a></li>
+            </>
+          )}
+          {c.tags?.includes("insights") && (
+            <>
+              <li><a href="https://www.gong.io/blog/social-selling/" target="_blank" rel="noreferrer">Signal-based engagement</a></li>
+            </>
+          )}
+          {c.tags?.includes("brand") && (
+            <>
+              <li><a href="https://marketingexamples.com/social/linkedin" target="_blank" rel="noreferrer">Outcome-led posts</a></li>
+            </>
+          )}
+          {c.tags?.includes("people") && (
+            <>
+              <li><a href="https://hbr.org/2017/03/the-new-sales-imperative" target="_blank" rel="noreferrer">Mapping buying committees</a></li>
+            </>
+          )}
+        </ul>
+      </div>
     </div>
   );
 }

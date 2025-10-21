@@ -8,8 +8,7 @@ import { CHALLENGES } from "@/data/challenges";
 
 export default function ChallengeDetail() {
   const { id } = useParams<{ id: string }>();
-  const list = Array.isArray(CHALLENGES) ? CHALLENGES : [];
-  const c = list.find(x => x?.id === id);
+  const c = (Array.isArray(CHALLENGES) ? CHALLENGES : []).find(x => x?.id === id);
 
   if (!c) {
     return (
@@ -49,12 +48,6 @@ export default function ChallengeDetail() {
         <ul className="list-disc pl-5 space-y-1">
           {c.rubric.map((r, i) => <li key={i}>{r}</li>)}
         </ul>
-      </div>
-
-      <div className="flex gap-3">
-        <button className="btn btn-primary">Start</button>
-        <button className="btn">Submit proof</button>
-        <button className="btn">Ask AI coach</button>
       </div>
     </div>
   );

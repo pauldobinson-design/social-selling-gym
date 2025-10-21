@@ -1,159 +1,107 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card } from "@/components/ui/card"
-import { ExternalLink } from "lucide-react"
+import { useState } from "react";
+import { useMockAuth } from "@/lib/mock-auth";
 
-interface SSIInputModalProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onSave: (scores: {
-    establishBrand: number
-    findPeople: number
-    engageInsights: number
-    buildRelationships: number
-  }) => void
-  initialScores?: {
-    establishBrand: number
-    findPeople: number
-    engageInsights: number
-    buildRelationships: number
-  }
-}
+export default function SSIInputModal() {
+  const [open, setOpen] = useState(false);
+  const { ssi, setSSI } = useMockAuth();
+  const [form, setForm] = useState({
+    brand: ssi.brand ?? 0,
+    people: ssi.people ?? 0,
+    insights: ssi.insights ?? 0,
+    relationships: ssi.relationships ?? 0,
+  });
 
-export function SSIInputModal({ open, onOpenChange, onSave, initialScores }: SSIInputModalProps) {
-  const [scores, setScores] = useState({
-    establishBrand: initialScores?.establishBrand ?? 0,
-    findPeople: initialScores?.findPeople ?? 0,
-    engageInsights: initialScores?.engageInsights ?? 0,
-    buildRelationships: initialScores?.buildRelationships ?? 0,
-  })
-
-  const totalScore = Object.values(scores).reduce((sum, score) => sum + score, 0)
-
-  const handleSave = () => {
-    onSave(scores)
-    onOpenChange(false)
+  function save() {
+    const clamp = (n: any) => Math.max(0, Math.min(25, Number(n) || 0));
+    setSSI({
+      brand: clamp(form.brand),
+      people: clamp(form.people),
+      insights: clamp(form.insights),
+      relationships: clamp(form.relationships),
+    });
+    setOpen(false);
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Enter Your LinkedIn SSI Scores</DialogTitle>
-          <DialogDescription>
-            Input your LinkedIn Social Selling Index scores to get personalized training recommendations.
-          </DialogDescription>
-        </DialogHeader>
+    <div>
+      <button className="btn btn-primary" onClick={() => setOpen(true)}>
+        Update SSI
+      </button>
 
-        <Card className="p-4 bg-muted/50">
-          <div className="flex items-start gap-3">
-            <ExternalLink className="h-5 w-5 text-muted-foreground mt-0.5" />
-            <div className="flex-1">
-              <p className="text-sm font-medium">Find Your SSI Score</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Visit{" "}
-                <a
-                  href="https://www.linkedin.com/sales/ssi"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline"
-                >
-                  linkedin.com/sales/ssi
-                </a>{" "}
-                to view your current scores
-              </p>
+      {open && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/30 p-4">
+          <div className="card w-full max-w-lg p-6 space-y-4">
+            <h2 className="text-xl font-semibold">LinkedIn SSI</h2>
+            <p className="text-sm text-ink-700">
+              Enter your latest SSI scores. You can find them by searching
+              “LinkedIn SSI” or visiting{" "}
+              <a
+                className="underline"
+                href="https://www.linkedin.com/sales/ssi"
+                target="_blank"
+                rel="noreferrer"
+              >
+                linkedin.com/sales/ssi
+              </a>.
+            </p>
+
+            {([
+              ["brand", "Establish Professional Brand"],
+              ["people", "Find the Right People"],
+              ["insights", "Engage with Insights"],
+              ["relationships", "Build Relationships"],
+            ] as const).map(([key, label]) => (
+              <div key={key}>
+                <label className="label">{label}</label>
+                <input
+                  className="input"
+                  type="number"
+                  min={0}
+                  max={25}
+                  value={(form as any)[key]}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, [key]: e.target.value }))
+                  }
+                />
+              </div>
+            ))}
+
+            <div className="flex justify-between items-center text-sm text-ink-700">
+              <span>
+                Total:{" "}
+                {(Number(form.brand) || 0) +
+                  (Number(form.people) || 0) +
+                  (Number(form.insights) || 0) +
+                  (Number(form.relationships) || 0)}{" "}
+                / 100
+              </span>
+              <a
+                className="underline"
+                href="https://www.linkedin.com/sales/ssi"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Open SSI
+              </a>
             </div>
-          </div>
-        </Card>
 
-        <div className="space-y-4 mt-4">
-          <div className="space-y-2">
-            <Label htmlFor="establishBrand">Establish Your Professional Brand (0-25)</Label>
-            <Input
-              id="establishBrand"
-              type="number"
-              min="0"
-              max="25"
-              value={scores.establishBrand}
-              onChange={(e) =>
-                setScores({
-                  ...scores,
-                  establishBrand: Math.min(25, Math.max(0, Number.parseInt(e.target.value) || 0)),
-                })
-              }
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="findPeople">Find the Right People (0-25)</Label>
-            <Input
-              id="findPeople"
-              type="number"
-              min="0"
-              max="25"
-              value={scores.findPeople}
-              onChange={(e) =>
-                setScores({ ...scores, findPeople: Math.min(25, Math.max(0, Number.parseInt(e.target.value) || 0)) })
-              }
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="engageInsights">Engage with Insights (0-25)</Label>
-            <Input
-              id="engageInsights"
-              type="number"
-              min="0"
-              max="25"
-              value={scores.engageInsights}
-              onChange={(e) =>
-                setScores({
-                  ...scores,
-                  engageInsights: Math.min(25, Math.max(0, Number.parseInt(e.target.value) || 0)),
-                })
-              }
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="buildRelationships">Build Relationships (0-25)</Label>
-            <Input
-              id="buildRelationships"
-              type="number"
-              min="0"
-              max="25"
-              value={scores.buildRelationships}
-              onChange={(e) =>
-                setScores({
-                  ...scores,
-                  buildRelationships: Math.min(25, Math.max(0, Number.parseInt(e.target.value) || 0)),
-                })
-              }
-            />
-          </div>
-
-          <Card className="p-4 bg-primary/5">
-            <div className="flex items-center justify-between">
-              <span className="font-medium">Total SSI Score</span>
-              <span className="text-2xl font-bold">{totalScore} / 100</span>
+            <div className="flex justify-end gap-3 pt-2">
+              <button className="btn" onClick={() => setOpen(false)}>
+                Cancel
+              </button>
+              <button className="btn btn-primary" onClick={save}>
+                Save
+              </button>
             </div>
-          </Card>
-        </div>
 
-        <div className="flex gap-3 mt-6">
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
-            Cancel
-          </Button>
-          <Button onClick={handleSave} className="flex-1">
-            Save Scores
-          </Button>
+            <p className="text-xs text-ink-500">
+              Stored locally for now. Link your account to save across devices.
+            </p>
+          </div>
         </div>
-      </DialogContent>
-    </Dialog>
-  )
+      )}
+    </div>
+  );
 }

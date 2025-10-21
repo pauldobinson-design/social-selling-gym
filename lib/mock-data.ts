@@ -1,0 +1,256 @@
+import type { Challenge, Template, LeaderboardEntry } from "./types"
+
+export const mockChallenges: Challenge[] = [
+  {
+    id: "1",
+    title: "LinkedIn Connection Request",
+    description: "Craft a personalized connection request that gets accepted",
+    difficulty: "beginner",
+    xpReward: 50,
+    category: "LinkedIn",
+    prompt:
+      "Write a LinkedIn connection request to a VP of Marketing at a B2B SaaS company. Their recent post was about the challenges of attribution in multi-channel campaigns. Make it personal and value-focused.",
+    completed: false,
+  },
+  {
+    id: "2",
+    title: "Value-First Cold Outreach",
+    description: "Lead with value before making any ask",
+    difficulty: "intermediate",
+    xpReward: 100,
+    category: "Outreach",
+    prompt:
+      "Write a cold email to a founder whose company just raised Series A funding. Offer genuine value or insights related to scaling sales teams. No immediate ask for a meeting.",
+    completed: false,
+  },
+  {
+    id: "3",
+    title: "Objection Handling: Price",
+    description: "Handle price objections by reframing value",
+    difficulty: "intermediate",
+    xpReward: 100,
+    category: "Objections",
+    prompt:
+      'A prospect says: "Your solution is 3x more expensive than your competitor." Write a response that reframes the conversation around ROI and value, not just price. Include a specific example or case study.',
+    completed: false,
+  },
+  {
+    id: "4",
+    title: "Follow-Up Without Being Pushy",
+    description: "Re-engage a prospect who went silent",
+    difficulty: "beginner",
+    xpReward: 50,
+    category: "Follow-Up",
+    prompt:
+      "Someone engaged with your initial outreach 2 weeks ago but hasn't responded since. Write a follow-up that adds new value and gives them an easy out if they're not interested.",
+    completed: true,
+  },
+  {
+    id: "5",
+    title: "Social Proof Storytelling",
+    description: "Use customer success stories effectively",
+    difficulty: "advanced",
+    xpReward: 150,
+    category: "Positioning",
+    prompt:
+      "Write a LinkedIn post or message that shares a customer success story. Make it about the customer's journey and results, not about your product. Include specific metrics and make it relatable to your target audience.",
+    completed: false,
+  },
+  {
+    id: "6",
+    title: "Discovery Call Opening",
+    description: "Start discovery calls with curiosity, not pitch",
+    difficulty: "intermediate",
+    xpReward: 100,
+    category: "Discovery",
+    prompt:
+      "Write your opening 2-3 minutes for a discovery call with a potential client. Set the agenda, build rapport, and ask your first discovery question. Focus on understanding their world, not pitching your solution.",
+    completed: false,
+  },
+  {
+    id: "7",
+    title: "Referral Request",
+    description: "Ask for referrals in a way that makes it easy to say yes",
+    difficulty: "advanced",
+    xpReward: 150,
+    category: "Referrals",
+    prompt:
+      "You just closed a successful deal with a happy customer. Write a message asking for referrals that's specific about who you're looking for and makes it easy for them to help you.",
+    completed: false,
+  },
+  {
+    id: "8",
+    title: "Breakup Email",
+    description: "The final follow-up that often gets responses",
+    difficulty: "beginner",
+    xpReward: 50,
+    category: "Follow-Up",
+    prompt:
+      "Write a 'breakup email' to a prospect who hasn't responded to multiple follow-ups. Be respectful, add final value, and give them an easy way to re-engage if timing improves.",
+    completed: false,
+  },
+  {
+    id: "9",
+    title: "Share Your Professional Insight",
+    description: "Craft and share a LinkedIn post about a recent industry trend",
+    difficulty: "beginner",
+    xpReward: 100,
+    category: "LinkedIn",
+    isRealWorld: true,
+    platform: "linkedin",
+    ssiPillar: "establishBrand",
+    prompt:
+      "Write a LinkedIn post sharing your perspective on a recent trend in your industry. Make it valuable, authentic, and conversation-starting. Include a question to encourage engagement. Then share it to your LinkedIn profile.",
+    completed: false,
+  },
+  {
+    id: "10",
+    title: "Personalized Connection Request",
+    description: "Research a prospect and craft a personalized LinkedIn connection request",
+    difficulty: "beginner",
+    xpReward: 75,
+    category: "LinkedIn",
+    isRealWorld: true,
+    platform: "linkedin",
+    ssiPillar: "findPeople",
+    prompt:
+      "Find a potential prospect on LinkedIn (VP of Marketing, Sales Director, or similar). Research their recent activity. Write a personalized connection request that references something specific about them or their company. Make it about them, not you.",
+    completed: false,
+  },
+  {
+    id: "11",
+    title: "Value-First Cold Outreach",
+    description: "Send a real cold email that leads with value",
+    difficulty: "intermediate",
+    xpReward: 150,
+    category: "Outreach",
+    isRealWorld: true,
+    platform: "email",
+    ssiPillar: "findPeople",
+    prompt:
+      "Identify a real prospect whose company just announced news (funding, product launch, expansion). Write a cold email offering genuine value or insights related to their announcement. No immediate ask for a meeting. Then send it.",
+    completed: false,
+  },
+  {
+    id: "12",
+    title: "Engage with Prospect Content",
+    description: "Comment thoughtfully on a prospect's LinkedIn post",
+    difficulty: "beginner",
+    xpReward: 50,
+    category: "LinkedIn",
+    isRealWorld: true,
+    platform: "linkedin",
+    ssiPillar: "engageInsights",
+    prompt:
+      "Find a LinkedIn post from someone in your target audience. Write a thoughtful comment that adds value to the conversation (not just 'Great post!'). Share your own perspective or ask a meaningful question. Then post it.",
+    completed: true,
+  },
+  {
+    id: "13",
+    title: "Customer Success Story Post",
+    description: "Share a real customer win on LinkedIn",
+    difficulty: "intermediate",
+    xpReward: 125,
+    category: "LinkedIn",
+    isRealWorld: true,
+    platform: "linkedin",
+    ssiPillar: "establishBrand",
+    prompt:
+      "Write a LinkedIn post about a customer success story. Focus on their journey and results, not your product. Include specific metrics if possible. Make it relatable to your target audience. Tag the customer if appropriate. Then share it.",
+    completed: false,
+  },
+  {
+    id: "14",
+    title: "Re-engage Silent Prospect",
+    description: "Send a real follow-up to a prospect who went silent",
+    difficulty: "intermediate",
+    xpReward: 100,
+    category: "Follow-Up",
+    isRealWorld: true,
+    platform: "email",
+    ssiPillar: "buildRelationships",
+    prompt:
+      "Think of a real prospect who engaged initially but hasn't responded in 2+ weeks. Write a follow-up that adds new value (article, insight, case study) and gives them an easy out if they're not interested. Then send it.",
+    completed: false,
+  },
+  {
+    id: "15",
+    title: "Share Industry Insight",
+    description: "Post valuable content that positions you as a thought leader",
+    difficulty: "intermediate",
+    xpReward: 100,
+    category: "LinkedIn",
+    isRealWorld: true,
+    platform: "linkedin",
+    ssiPillar: "establishBrand",
+    prompt:
+      "Write a LinkedIn post sharing a counterintuitive insight or lesson learned in your field. Make it specific and actionable. Use storytelling if possible. End with a question to spark discussion. Then share it.",
+    completed: false,
+  },
+  {
+    id: "16",
+    title: "Referral Request",
+    description: "Ask a happy customer for a real referral",
+    difficulty: "advanced",
+    xpReward: 200,
+    category: "Referrals",
+    isRealWorld: true,
+    platform: "email",
+    ssiPillar: "buildRelationships",
+    prompt:
+      "Think of a customer who's had success with your solution. Write a message asking for referrals that's specific about who you're looking for and makes it easy for them to help. Include a simple template they can forward. Then send it.",
+    completed: false,
+  },
+]
+
+export const mockTemplates: Template[] = [
+  {
+    id: "1",
+    title: "Cold Email Template",
+    description: "A proven cold email template for B2B outreach",
+    category: "Outreach",
+    content:
+      "Hi [Name],\n\nI noticed [specific observation about their company].\n\n[Your value proposition in one sentence].\n\nWould you be open to a quick 15-minute call next week?\n\nBest,\n[Your Name]",
+    usageCount: 234,
+  },
+  {
+    id: "2",
+    title: "LinkedIn Message Template",
+    description: "Effective LinkedIn outreach message",
+    category: "LinkedIn",
+    content:
+      "Hi [Name],\n\nI came across your profile and was impressed by [specific detail].\n\nI help [target audience] achieve [specific outcome].\n\nWould love to connect and share some insights.\n\nBest,\n[Your Name]",
+    usageCount: 189,
+  },
+  {
+    id: "3",
+    title: "Follow-Up Template",
+    description: "Non-pushy follow-up message",
+    category: "Follow-Up",
+    content:
+      "Hi [Name],\n\nJust wanted to follow up on my previous message.\n\nI understand you're busy, so I'll keep this brief.\n\n[One sentence value reminder]\n\nLet me know if you'd like to chat.\n\nBest,\n[Your Name]",
+    usageCount: 156,
+  },
+  {
+    id: "4",
+    title: "Objection Handler",
+    description: "Template for handling price objections",
+    category: "Objections",
+    content:
+      "I understand price is a concern.\n\nLet me share how [specific ROI example].\n\nMany of our clients initially had the same concern, but found that [outcome].\n\nWould it help if I showed you a breakdown of the value?",
+    usageCount: 142,
+  },
+]
+
+export const mockLeaderboard: LeaderboardEntry[] = [
+  { rank: 1, userId: "1", name: "Sarah Chen", xp: 2450, level: 12 },
+  { rank: 2, userId: "2", name: "Mike Johnson", xp: 2180, level: 11 },
+  { rank: 3, userId: "3", name: "Emily Rodriguez", xp: 1920, level: 10 },
+  { rank: 4, userId: "4", name: "David Kim", xp: 1750, level: 9 },
+  { rank: 5, userId: "5", name: "Alex Thompson", xp: 1580, level: 9 },
+  { rank: 6, userId: "6", name: "Jessica Lee", xp: 1420, level: 8 },
+  { rank: 7, userId: "7", name: "Chris Martinez", xp: 1290, level: 8 },
+  { rank: 8, userId: "8", name: "Rachel Green", xp: 1150, level: 7 },
+  { rank: 9, userId: "9", name: "Tom Wilson", xp: 1020, level: 7 },
+  { rank: 10, userId: "10", name: "Lisa Anderson", xp: 890, level: 6 },
+]

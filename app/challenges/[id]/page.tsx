@@ -14,7 +14,7 @@ export default function ChallengeDetail() {
     return (
       <div className="space-y-4">
         <h1 className="text-2xl font-bold">Challenge not found</h1>
-        <p className="text-ink-700">That ID isn’t in the current challenge set.</p>
+        <p className="text-gray-700">That ID isn’t in the current challenge set.</p>
         <Link className="btn" href="/challenges">Back to Challenges</Link>
       </div>
     );
@@ -26,13 +26,13 @@ export default function ChallengeDetail() {
         <h1 className="text-2xl font-bold">{c.title}</h1>
         <Link className="btn" href="/challenges">Back</Link>
       </div>
-      <div className="text-sm text-ink-500">{c.level} • {c.channel} • {c.time} • XP {c.xp}</div>
-      <p className="text-ink-700">{c.objective}</p>
+      <div className="text-sm text-gray-500">{c.level} • {c.channel} • {c.time} • XP {c.xp}</div>
+      <p className="text-gray-700">{c.objective}</p>
 
       {c.example && (
         <div className="card p-4">
           <h2 className="text-lg font-semibold">Example</h2>
-          <p className="text-ink-700">{c.example}</p>
+          <p className="text-gray-700">{c.example}</p>
         </div>
       )}
 

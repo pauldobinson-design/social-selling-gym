@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import FormatToolbar from "@/components/format-toolbar";
+import PostPreview from "@/components/post-preview";
+import { formatText } from "@/lib/formatter";
 
 type Result = {
   ok: boolean;
@@ -15,6 +18,8 @@ export default function PostCraft() {
   const [tone, setTone] = useState("Trusted Guide");
   const [loading, setLoading] = useState(false);
   const [res, setRes] = useState<Result | null>(null);
+
+  const stats = formatText.stats(text);
 
   async function getFeedback() {
     setLoading(true);
@@ -34,39 +39,63 @@ export default function PostCraft() {
     setLoading(false);
   }
 
+  function copyOut() {
+    navigator.clipboard.writeText(text).catch(() => {});
+  }
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">PostCraft</h1>
 
+      {/* Controls */}
       <div className="card p-4 space-y-3">
-        <div className="grid gap-2">
-          <label className="label">Tone</label>
-          <select className="input max-w-xs" value={tone} onChange={(e) => setTone(e.target.value)}>
-            <option>Trusted Guide</option>
-            <option>Sharp & Direct</option>
-            <option>Conversational</option>
-            <option>Data-led</option>
-          </select>
+        <div className="flex flex-wrap items-end gap-3">
+          <div>
+            <label className="label">Tone</label>
+            <select className="input max-w-xs" value={tone} onChange={(e) => setTone(e.target.value)}>
+              <option>Trusted Guide</option>
+              <option>Sharp & Direct</option>
+              <option>Conversational</option>
+              <option>Data-led</option>
+            </select>
+          </div>
+
+          <div className="ml-auto flex gap-2">
+            <button className="btn" onClick={() => setText("")}>Clear</button>
+            <button className="btn" onClick={copyOut}>Copy</button>
+            <button className="btn btn-primary" onClick={getFeedback} disabled={loading || !text.trim()}>
+              {loading ? "Thinking…" : "Get feedback"}
+            </button>
+          </div>
         </div>
 
-        <div className="grid gap-2">
-          <label className="label">Your draft</label>
-          <textarea
-            className="textarea"
-            placeholder="Paste your LinkedIn post draft here…"
-            rows={10}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-          />
-        </div>
+        <FormatToolbar value={text} onChange={setText} textareaId="post-draft" />
 
-        <div className="flex gap-2">
-          <button className="btn btn-primary" onClick={getFeedback} disabled={loading || !text.trim()}>
-            {loading ? "Thinking…" : "Get feedback"}
-          </button>
-          <button className="btn" onClick={() => { setText(""); setRes(null); }} disabled={loading}>
-            Clear
-          </button>
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <label className="label">Your draft</label>
+            <textarea
+              id="post-draft"
+              className="textarea"
+              placeholder="Paste or write your LinkedIn post…"
+              rows={16}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+            />
+            <div className="mt-2 text-xs text-gray-600">
+              Words: <strong>{stats.words}</strong>, Characters: <strong>{stats.chars}</strong>, Lines: <strong>{stats.lines}</strong>{" "}
+              {stats.words > 0 && (
+                <span className="ml-2 chip">
+                  {stats.idealWords ? "In 220–280 sweet spot" : "Outside ideal range"}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <label className="label">Preview</label>
+            <PostPreview text={text} author={{ name: "You", title: "Social Seller" }} />
+          </div>
         </div>
 
         {res && (
@@ -100,7 +129,7 @@ export default function PostCraft() {
         )}
 
         <p className="text-xs text-gray-500">
-          Tip: We don’t post for you. Refine here, then copy to LinkedIn.
+          Tip: Formatter changes your text; preview approximates LinkedIn’s look for readability.
         </p>
       </div>
     </div>

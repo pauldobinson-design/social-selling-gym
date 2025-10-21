@@ -1,64 +1,112 @@
 "use client";
 
-export const dynamic = "force-dynamic"; // avoid static prerender traps
+export const dynamic = "force-dynamic";
 
-import { useMemo, useState } from "react";
-import { CHALLENGES } from "@/data/challenges";
+import { useEffect, useMemo, useState } from "react";
+import { useSession } from "next-auth/react";
+import { StatCard } from "@/components/cards";
 import ChallengeCard from "@/components/challenge-card";
+import { recommendBySSI } from "@/lib/recommend";
 
-const channels = ["LinkedIn", "Email", "Calls"] as const;
-const outcomes = ["Connect", "Meeting", "Nurture"] as const;
-const times = ["≤10m", "10–20m", "20m+"] as const;
+type SSI = { brand: number; people: number; insights: number; relationships: number };
 
-export default function Challenges() {
-  const [filters, setFilters] = useState<{channel?: string; outcome?: string; time?: string}>({});
+export default function Dashboard() {
+  const { data: session } = useSession();
+  const [loading, setLoading] = useState(true);
+  const [ssi, setSsi] = useState<SSI>({ brand: 0, people: 0, insights: 0, relationships: 0 });
+  const [xp, setXp] = useState(0);
 
-  const list = useMemo(() => {
-    const src = Array.isArray(CHALLENGES) ? CHALLENGES : [];
-    return src.filter((c) => {
-      if (!c) return false;
-      return (!filters.channel || c.channel === filters.channel) &&
-             (!filters.outcome || c.outcome === filters.outcome) &&
-             (!filters.time || c.time === filters.time);
-    });
-  }, [filters]);
+  const name = session?.user?.name ?? "guest";
+  const total = ssi.brand + ssi.people + ssi.insights + ssi.relationships;
+  const toNext = Math.max(0, 1200 - xp);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/profile");
+        const json = await res.json();
+        if (!active) return;
+        if (json?.ok) {
+          setSsi(json.profile?.ssi || { brand: 0, people: 0, insights: 0, relationships: 0 });
+          setXp(json.profile?.xp || 0);
+        }
+      } catch { /* ignore */ }
+      setLoading(false);
+    })();
+    return () => { active = false; };
+  }, []);
+
+  const recs = useMemo(() => {
+    try { return (recommendBySSI(ssi) || []).filter(Boolean); }
+    catch { return []; }
+  }, [ssi]);
+
+  async function complete(action: "comment" | "post" | "dm") {
+    const xpMap = { comment: 50, post: 120, dm: 70 } as const;
+    const reasonMap = { comment: "Comment with value", post: "Outcome-led post", dm: "Warm DM" } as const;
+    setLoading(true);
+    try {
+      const res = await fetch("/api/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ deltaXp: xpMap[action], reason: reasonMap[action] })
+      });
+      const json = await res.json();
+      if (json?.ok) setXp(json.profile?.xp || 0);
+    } catch {}
+    setLoading(false);
+  }
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Challenges</h1>
-      <div className="card p-4 flex flex-wrap gap-3 items-center">
-        <select
-          className="input max-w-xs"
-          value={filters.channel || ""}
-          onChange={e => setFilters(f => ({...f, channel: e.target.value || undefined}))}
-        >
-          <option value="">Channel</option>
-          {channels.map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
-
-        <select
-          className="input max-w-xs"
-          value={filters.outcome || ""}
-          onChange={e => setFilters(f => ({...f, outcome: e.target.value || undefined}))}
-        >
-          <option value="">Outcome</option>
-          {outcomes.map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
-
-        <select
-          className="input max-w-xs"
-          value={filters.time || ""}
-          onChange={e => setFilters(f => ({...f, time: e.target.value || undefined}))}
-        >
-          <option value="">Time</option>
-          {times.map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
-
-        <button className="btn ml-auto" onClick={() => setFilters({})}>Reset</button>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Welcome, {name}</h1>
+        <a className="btn" href="/account">Account</a>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {list.map((c) => <ChallengeCard key={c.id} c={c} />)}
+      {total === 0 && (
+        <div className="card p-4 border border-gray-200">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <div className="font-semibold">Set your SSI to personalise your plan</div>
+              <p className="text-sm text-gray-700">Open LinkedIn’s SSI page, then enter your 4 pillar scores (0–25 each).</p>
+            </div>
+            <a className="btn" href="https://www.linkedin.com/sales/ssi" target="_blank" rel="noreferrer">Open SSI</a>
+          </div>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <StatCard label="Progress" value={`${xp} / 1200 XP`} sub={`${toNext} to Level 6`} />
+        <StatCard label="SSI Total" value={`${total} / 100`} sub="Sum of 4 pillars" />
+        <StatCard label="Active Challenges" value={String(recs.length || 3)} sub="Keep your streak alive" />
+      </div>
+
+      <div className="card p-4">
+        <h2 className="text-xl font-semibold mb-2">Today’s plan</h2>
+        <ul className="list-disc pl-5 space-y-1 text-sm">
+          <li>Comment with value on 2 target posts</li>
+          <li>Write 1 outcome-led post (or reshare with your angle)</li>
+          <li>Send 2 warm DMs or nurture follow-ups</li>
+        </ul>
+        <div className="mt-3 flex gap-2">
+          <a className="btn" href="/challenges/c1">Do a comment</a>
+          <a className="btn" href="/postcraft">Draft a post</a>
+          <a className="btn" href="/challenges/c2">Send a warm DM</a>
+        </div>
+        <div className="mt-3 flex gap-2">
+          <button className="btn btn-primary" disabled={loading} onClick={() => complete("comment")}>Mark comment done (+50 XP)</button>
+          <button className="btn btn-primary" disabled={loading} onClick={() => complete("post")}>Mark post done (+120 XP)</button>
+          <button className="btn btn-primary" disabled={loading} onClick={() => complete("dm")}>Mark DM done (+70 XP)</button>
+        </div>
+      </div>
+
+      <div className="card p-4">
+        <h2 className="text-xl font-semibold mb-2">Recommended for you</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {recs.map((c) => (<ChallengeCard key={c?.id ?? Math.random()} c={c as any} />))}
+        </div>
       </div>
     </div>
   );

@@ -1,4 +1,7 @@
 // app/api/auth/[...nextauth]/route.ts
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
@@ -21,14 +24,13 @@ export const authOptions = {
     },
     async session({ session, token }) {
       session.user = {
-        name: token.name as string | null,
-        email: token.email as string | null,
-        image: (token as any).picture as string | null
+        name: (token.name as string) || null,
+        email: (token.email as string) || null,
+        image: ((token as any).picture as string) || null
       };
       return session;
     }
-  },
-  pages: {} // using default pages (Google pop-up)
+  }
 };
 
 const handler = NextAuth(authOptions);

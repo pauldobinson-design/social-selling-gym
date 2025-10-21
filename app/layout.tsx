@@ -10,7 +10,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Social Selling Gym",
-  description: "Practise social selling with challenges, coaching, and progress tracking."
+  description: "Build pipeline with a daily social selling workout."
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -21,13 +21,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <MockAuthProvider>
             <Header />
             <main className="container py-8">{children}</main>
-            <footer className="container py-8 text-sm text-ink-500">
-              <div className="flex items-center gap-3">
-                <span>Developer tools</span>
-                <form action="/api/toggle-mock" method="post">
-                  <button className="btn">Toggle Mock Login</button>
-                </form>
-                <span className="ml-auto">Built with Next.js and Tailwind</span>
+            <footer className="border-t border-gray-200 mt-12">
+              <div className="container py-8 text-sm text-gray-700 flex items-center justify-between">
+                <span>© {new Date().getFullYear()} Social Selling Gym</span>
+                <nav className="flex gap-4">
+                  <a href="/privacy">Privacy</a>
+                  <a href="/terms">Terms</a>
+                </nav>
               </div>
             </footer>
           </MockAuthProvider>

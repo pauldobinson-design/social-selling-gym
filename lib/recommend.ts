@@ -1,3 +1,4 @@
+// lib/recommend.ts
 import { CHALLENGES } from "@/data/challenges";
 
 export function recommendBySSI(ssi: { brand: number; people: number; insights: number; relationships: number }) {

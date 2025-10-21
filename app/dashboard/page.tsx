@@ -1,17 +1,19 @@
 "use client";
 
-export const dynamic = "force-dynamic"; // avoid static prerender traps
+export const dynamic = "force-dynamic";
 
 import { useEffect } from "react";
-import ChallengeCard from "@/components/challenge-card";
+import { useSession } from "next-auth/react";
 import { StatCard } from "@/components/cards";
+import ChallengeCard from "@/components/challenge-card";
 import { useMockAuth } from "@/lib/mock-auth";
 import { recommendBySSI } from "@/lib/recommend";
 
 export default function Dashboard() {
-  const { user, signInMock, ssi } = useMockAuth();
+  const { data: session } = useSession();
+  const { user: mockUser, signInMock, ssi } = useMockAuth();
 
-  // Optional: if you still want the “?mock=1” behaviour, read from window (no Suspense needed)
+  // Optional mock toggle via querystring, without useSearchParams
   useEffect(() => {
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
@@ -19,27 +21,27 @@ export default function Dashboard() {
     }
   }, [signInMock]);
 
-  const total = (ssi.brand || 0) + (ssi.people || 0) + (ssi.insights || 0) + (ssi.relationships || 0);
-  const progress = user ? `${user.xp} / 1200 XP` : "0 / 1200 XP";
-  const toNext = user ? Math.max(0, 1200 - user.xp) : 1200;
+  const displayName =
+    (session?.user?.name as string | undefined) ??
+    (mockUser?.name ?? "guest");
+
+  const xp = mockUser?.xp ?? 0;
+  const totalSSI = (ssi.brand || 0) + (ssi.people || 0) + (ssi.insights || 0) + (ssi.relationships || 0);
+  const toNext = Math.max(0, 1200 - xp);
 
   let recs: any[] = [];
-  try {
-    recs = (recommendBySSI(ssi) || []).filter(Boolean);
-  } catch {
-    recs = [];
-  }
+  try { recs = (recommendBySSI(ssi) || []).filter(Boolean); } catch {}
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{user ? `Welcome back, ${user.name}` : "Welcome, guest"}</h1>
-        <button className="btn" onClick={signInMock}>Toggle mock sign in</button>
+        <h1 className="text-2xl font-bold">Welcome, {displayName}</h1>
+        <a href="/account" className="btn">Preferences</a>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <StatCard label="Progress" value={progress} sub={`${toNext} to Level 6`} />
-        <StatCard label="SSI Total" value={`${total} / 100`} sub="Sum of 4 pillars" />
+        <StatCard label="Progress" value={`${xp} / 1200 XP`} sub={`${toNext} to Level 6`} />
+        <StatCard label="SSI Total" value={`${totalSSI} / 100`} sub="Sum of 4 pillars" />
         <StatCard label="Active Challenges" value={String(recs.length || 3)} sub="Keep your streak alive" />
       </div>
 

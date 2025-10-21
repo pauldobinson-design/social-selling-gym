@@ -1,26 +1,45 @@
-// app/api/post-feedback/route.ts
+import OpenAI from "openai";
 import { NextResponse } from "next/server";
 
-export async function POST(req: Request) {
-  let body: any = {};
-  try { body = await req.json(); } catch {}
+const client = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.envOPENAI_API_KEY as string }) : null;
 
-  const text = typeof body?.text === "string" ? body.text : "";
-  if (!text) {
-    return NextResponse.json({ ok: false, message: "Missing 'text'." }, { status: 400 });
+// Typescript nit: avoid crash if variable is missing at build (string cast above is OK)
+
+export async function POST(req: Request) {
+  const { text = "", tone = "Trusted Guide" } = await req.json().catch(() => ({}));
+  const body = String(text).slice(0, 8000);
+  if (!body) return NextResponse.json({ ok: false, message: "Missing text" }, { status: 400 });
+  if (!client) {
+    const words = body.trim().split(/\s+/).filter(Boolean).length;
+    return NextResponse.json({
+      ok: false,
+      message: "No AI key set",
+      words,
+      inIdealRange: words >= 220 && words <= 280
+    });
   }
 
-  const words = text.trim().split(/\s+/).filter(Boolean).length;
-  const inIdealRange = words >= 220 && words <= 280;
+  const prompt = [
+    "Assess the LinkedIn post for hook strength, clarity, credibility, and CTA.",
+    "Return JSON { words:number, inIdealRange:boolean, suggestions:string[] }.",
+    "Ideal range is 220 to 280 words.",
+    `Tone: ${tone}`,
+    `Post: """${body}"""`
+  ].join("\n");
 
-  return NextResponse.json({
-    ok: true,
-    words,
-    inIdealRange,
-    suggestions: [
-      inIdealRange ? "Length is in a good range." : "Aim for 220–280 words.",
-      "Lead with a hook that names the risk and outcome.",
-      "Add one proof point and a single CTA."
-    ]
+  const res = await client.responses.create({
+    model: "gpt-4o-mini",
+    input: prompt,
+    temperature: 0.3,
+    response_format: { type: "json_object" }
   });
+
+  const out = res.output_text || (res as any).output?.[0]?.content?.[0]?.text || "{}";
+  let data: any = {};
+  try { data = JSON.parse(out); } catch { data = {}; }
+
+  const words = Number(data.words) || body.trim().split(/\s+/).filter(Boolean).length;
+  const inIdealRange = Boolean(data.inIdealRange ?? (words >= 220 && words <= 280));
+  const suggestions = Array.isArray(data.suggestions) ? data.suggestions.slice(0, 5) : [];
+  return NextResponse.json({ ok: true, words, inIdealRange, suggestions });
 }

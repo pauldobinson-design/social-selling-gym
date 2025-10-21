@@ -6,43 +6,42 @@ export interface User {
   level: number
   streak: number
   avatar?: string
-  settings?: UserSettings // Added settings field to User interface
+  profile?: Profile
 }
 
-export interface UserSettings {
-  openaiApiKey?: string // Added UserSettings type for storing OpenAI API key
-  linkedinSSI?: LinkedInSSI // Added LinkedIn SSI scores
+export interface Profile {
+  ssiPillars?: LinkedInSSI
+  openaiApiKey?: string
+  industry?: string
+  targetAudience?: string
+  company?: string
 }
 
 export interface LinkedInSSI {
-  establishBrand: number // 0-25: Professional brand score
-  findPeople: number // 0-25: Finding right people score
-  engageInsights: number // 0-25: Engaging with insights score
-  buildRelationships: number // 0-25: Building relationships score
-  totalScore: number // 0-100: Total SSI score
+  establishBrand: number
+  findPeople: number
+  engageInsights: number
+  buildRelationships: number
+  totalScore: number
   lastUpdated: Date
-}
-
-export interface SSIPillar {
-  name: string
-  score: number
-  maxScore: number
-  description: string
-  gap: number // How far from max score
 }
 
 export interface Challenge {
   id: string
   title: string
   description: string
+  objective: string
+  example?: string
+  steps: string[]
+  rubric: string[]
   difficulty: "beginner" | "intermediate" | "advanced"
   xpReward: number
+  estimatedTime: string
   category: string
-  prompt: string
+  channel?: "LinkedIn" | "Email" | "Calls"
+  outcome?: "Connect" | "Meeting" | "Nurture"
+  ssiPillar?: "establishBrand" | "findPeople" | "engageInsights" | "buildRelationships"
   completed?: boolean
-  isRealWorld?: boolean // Whether this is a real-world challenge (share to social)
-  platform?: "linkedin" | "twitter" | "email" // Target platform for sharing
-  ssiPillar?: "establishBrand" | "findPeople" | "engageInsights" | "buildRelationships" // Maps to LinkedIn SSI pillar
 }
 
 export interface Submission {
@@ -53,7 +52,7 @@ export interface Submission {
   feedback?: AIFeedback
   submittedAt: Date
   xpEarned: number
-  shared?: boolean // Whether user actually shared to social media
+  shared?: boolean
   sharedAt?: Date
   platform?: string
 }
@@ -65,13 +64,70 @@ export interface AIFeedback {
   detailedFeedback: string
 }
 
+export interface Pitch {
+  id: string
+  userId: string
+  industry: string
+  targetAudience: string
+  problem: string
+  outcome: string
+  proof: string
+  differentiator: string
+  cta: string
+  pitchText: string
+  score?: PitchScore
+  createdAt: Date
+  isDefault?: boolean
+}
+
+export interface PitchScore {
+  overall: number
+  clarity: number
+  audienceFit: number
+  outcomeStrength: number
+  proof: number
+  brevity: number
+  voice: number
+  edits: string[]
+  improvedVersion: string
+}
+
+export interface Post {
+  id: string
+  userId: string
+  content: string
+  tone: "Challenger" | "Trusted Guide" | "Earned Humour" | "Executive Tight"
+  score?: PostScore
+  createdAt: Date
+  shared?: boolean
+  platform?: string
+}
+
+export interface PostScore {
+  overall: number
+  hookStrength: number
+  narrativeFlow: number
+  commentPotential: number
+  feedback: string
+  suggestions: string[]
+}
+
 export interface Template {
   id: string
   title: string
   description: string
   category: string
   content: string
+  variables: string[]
   usageCount: number
+}
+
+export interface XPEvent {
+  id: string
+  userId: string
+  amount: number
+  source: string
+  createdAt: Date
 }
 
 export interface LeaderboardEntry {
@@ -81,4 +137,6 @@ export interface LeaderboardEntry {
   xp: number
   level: number
   avatar?: string
+  industry?: string
+  company?: string
 }

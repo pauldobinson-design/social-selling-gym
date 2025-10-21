@@ -12,7 +12,7 @@ html, body {
 }
 
 body {
-  @apply bg-white text-ink-900;
+  @apply bg-white text-gray-900;
   font-feature-settings: "rlig" 1, "calt" 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -35,7 +35,7 @@ img, svg, video, canvas {
   }
 
   .card {
-    @apply rounded-xl bg-white border border-gray-100 shadow-card;
+    @apply rounded-xl bg-white border border-gray-100 shadow-md;
   }
 
   /* Buttons */
@@ -45,14 +45,15 @@ img, svg, video, canvas {
   }
 
   .btn-primary {
-    @apply bg-primary text-white font-semibold px-5 py-2.5 rounded-xl shadow-card hover:opacity-95
+    @apply bg-primary text-white font-semibold px-5 py-2.5 rounded-xl shadow-md hover:opacity-95
            focus:outline-none focus:ring-2 focus:ring-primary/40;
   }
 
   .btn-ghost {
-    @apply bg-transparent border-transparent text-ink-700 hover:bg-gray-100/40;
+    @apply bg-transparent border-transparent text-gray-700 hover:bg-gray-100/40;
   }
 
   /* Inputs */
   .input {
-    @apply w-full rounded-xl border border-gray-300 bg-white px-
+    @apply w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900
+           outline-none foc

@@ -7,7 +7,7 @@ function sliceSel(t: string, s: number, e: number) {
 
 export const formatText = {
   wrap(t: string, s: number, e: number, pre: string, post: string) {
-    if (s === e) return t; // nothing selected
+    if (s === e) return t;
     const [a, mid, b] = sliceSel(t, s, e);
     return `${a}${pre}${mid}${post}${b}`;
   },
@@ -20,20 +20,16 @@ export const formatText = {
 
   toBullets(t: string) {
     const lines = t.split("\n");
-    const out = lines.map((l) => (l.trim() ? `• ${l.replace(/^(\d+\.|\-|\*)\s*/, "")}` : "")).join("\n");
-    return out;
+    return lines.map((l) => (l.trim() ? `• ${l.replace(/^(\d+\.|\-|\*)\s*/, "")}` : "")).join("\n");
   },
 
   toNumbered(t: string) {
-    const lines = t.split("\n").filter((l) => l.trim().length > 0);
-    const out = lines.map((l, i) => `${i + 1}. ${l.replace(/^(\d+\.|\-|\*|•)\s*/, "")}`).join("\n");
-    return out;
+    const lines = t.split("\n").filter((l) => l.trim());
+    return lines.map((l, i) => `${i + 1}. ${l.replace(/^(\d+\.|\-|\*|•)\s*/, "")}`).join("\n");
   },
 
   blockQuote(t: string) {
-    // add “ ” around selection or each line
-    const lines = t.split("\n");
-    return lines.map((l) => (l.trim() ? `“${l.trim()}”` : "")).join("\n");
+    return t.split("\n").map((l) => (l.trim() ? `“${l.trim()}”` : "")).join("\n");
   },
 
   stripEmojis(t: string) {
@@ -41,7 +37,6 @@ export const formatText = {
   },
 
   smartQuotes(t: string) {
-    // naive smart quotes: replace straight quotes
     return t
       .replace(/(^|[\s([{<])"(?=\S)/g, "$1“")
       .replace(/"(?=[$\s)\]}>.,!?:;]|$)/g, "”")
@@ -50,35 +45,32 @@ export const formatText = {
   },
 
   tidyWhitespace(t: string) {
-    return t
-      .replace(/[ \t]+$/gm, "")         // strip line-end spaces
-      .replace(/\n{3,}/g, "\n\n")       // max 2 consecutive newlines
-      .replace(/[ \t]{2,}/g, " ");      // collapse multiple spaces
+    return t.replace(/[ \t]+$/gm, "").replace(/\n{3,}/g, "\n\n").replace(/[ \t]{2,}/g, " ");
   },
 
   ensureLinkedInSpacing(t: string) {
-    // add a blank line between blocks > 120 chars to improve scannability
     const parts = t.split("\n");
     const out: string[] = [];
     for (let i = 0; i < parts.length; i++) {
       const line = parts[i];
       out.push(line);
-      if (line.trim().length > 120 && (i + 1 < parts.length) && parts[i + 1].trim() !== "") {
-        out.push("");
-      }
+      if (line.trim().length > 120 && i + 1 < parts.length && parts[i + 1].trim() !== "") out.push("");
     }
     return out.join("\n");
   },
 
   hashHighlight(t: string) {
-    // normalise hashtags (lowercase, no punctuation except _)
     return t.replace(/(^|\s)#([a-zA-Z0-9_\-]+)/g, (m, sp, tag) => `${sp}#${tag.toLowerCase().replace(/[^a-z0-9_]/gi,"")}`);
   },
 
+  shorten(t: string, _pct = 0.9) {
+    const fillers = /\b(just|really|very|actually|basically|in order to|kind of|sort of)\b/gi;
+    let out = t.replace(fillers, "");
+    return out.replace(/[ \t]{2,}/g, " ").trim();
+  },
+
   stats(t: string) {
-    const words = t.trim().split(/\s+/).filter(Boolean).length;
-    const chars = t.length;
-    const lines = t.split("\n").length;
-    return { words, chars, lines, idealWords: words >= 220 && words <= 280 };
+    const words = t.trim() ? t.trim().split(/\s+/).length : 0;
+    return { words, chars: t.length, lines: t.split("\n").length, idealWords: words >= 220 && words <= 280 };
   }
 };

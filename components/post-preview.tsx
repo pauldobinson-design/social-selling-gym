@@ -71,17 +71,15 @@ export default function PostPreview({
 
       {/* Fold line */}
       {showFold && below && !expanded && (
-        <div className="mt-1 flex items-center gap-2">
-          <div className="h-px flex-1 bg-gray-200" />
-          <button
-            className="text-sm text-gray-600 underline underline-offset-2"
-            onClick={() => setExpanded(true)}
-          >
-            … See more
-          </button>
-          <div className="h-px flex-1 bg-gray-200" />
-        </div>
-      )}
+        <div className="fold-line">
+    <button
+      className="underline underline-offset-2"
+      onClick={() => setExpanded(true)}
+    >
+      …  more
+    </button>
+  </div>
+)}
 
       {/* Below-the-fold (toggle) */}
       {expanded && below && (

@@ -27,3 +27,9 @@ img, svg, video, canvas { display: block; max-width: 100%; }
 .kpis { @apply grid grid-cols-1 sm:grid-cols-3 gap-4; }
 .kpi-card { @apply card p-4; }
 .section { @apply card p-4; }
+
+/* LinkedIn-like preview helpers */
+.prose .li-mention { color: var(--tw-prose-links, rgb(37 99 235)); }
+.prose .li-hashtag { color: var(--tw-prose-links, rgb(37 99 235)); }
+.prose .li-divider { height: 1px; background-color: rgb(229 231 235); margin: 0.75rem 0; }
+.prose .li-kicker { text-transform: uppercase; letter-spacing: .08em; font-size: .75rem; color: rgb(75 85 99); }

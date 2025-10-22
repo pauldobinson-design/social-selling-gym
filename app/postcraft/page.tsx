@@ -112,35 +112,33 @@ export default function PostCraft() {
         </div>
 
         {/* EDITOR + PREVIEW */}
-        <div
-          className="grid gap-4 md:[grid-template-columns:1.3fr_1fr] md:grid-cols-[1.3fr_1fr]" // wider editor than preview
-        >
-          {/* Editor column */}
-          <div className="min-w-0">
-            <label className="label">Your draft</label>
-            <textarea
-              id="post-draft"
-              className="textarea h-[32rem] md:h-[34rem] resize-vertical"
-              placeholder="Paste or write your LinkedIn post…"
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-            />
-            <div className="mt-2 text-xs text-gray-600">
-              Words: <strong>{stats.words}</strong>, Characters: <strong>{stats.chars}</strong>, Lines: <strong>{stats.lines}</strong>{" "}
-              {stats.words > 0 && (
-                <span className="ml-2 chip">
-                  {stats.idealWords ? "In 220–280 sweet spot" : "Outside ideal range"}
-                </span>
-              )}
-            </div>
-          </div>
+<div className="grid gap-6 lg:grid-cols-[2fr_1fr] md:grid-cols-[1.6fr_1fr]">
+  {/* Editor column */}
+  <div className="min-w-0">
+    <label className="label">Your draft</label>
+    <textarea
+      id="post-draft"
+      className="textarea h-[34rem] w-full resize-vertical"
+      placeholder="Paste or write your LinkedIn post…"
+      value={text}
+      onChange={(e) => setText(e.target.value)}
+    />
+    <div className="mt-2 text-xs text-gray-600">
+      Words: <strong>{stats.words}</strong>, Characters: <strong>{stats.chars}</strong>, Lines: <strong>{stats.lines}</strong>{" "}
+      {stats.words > 0 && (
+        <span className="ml-2 chip">
+          {stats.idealWords ? "In 220–280 sweet spot" : "Outside ideal range"}
+        </span>
+      )}
+    </div>
+  </div>
 
-          {/* Preview column */}
-          <div className="min-w-0">
-            <label className="label">Preview</label>
-            <PostPreview text={text} author={{ name: "You", title: "Social Seller" }} showFold />
-          </div>
-        </div>
+  {/* Preview column */}
+  <div className="min-w-0">
+    <label className="label">Preview</label>
+    <PostPreview text={text} author={{ name: "You", title: "Social Seller" }} showFold />
+  </div>
+</div>
 
         {res && (
           <div className="space-y-2">

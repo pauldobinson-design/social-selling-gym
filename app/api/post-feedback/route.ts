@@ -25,7 +25,7 @@ export async function POST(req: Request) {
   ].join("\n");
 
   const res = await client.responses.create({
-    model: "gpt-4o-mini",
+    model: "gpt-3.5-turbo",
     input: prompt,
     temperature: 0.3,
     response_format: { type: "json_object" }

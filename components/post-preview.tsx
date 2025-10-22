@@ -7,10 +7,11 @@ type Props = {
   text: string;
   author?: { name?: string; title?: string };
   showFold?: boolean;
-  foldLines?: number; // visible lines before "See more"
+  linesBeforeFold?: number; // exact visible lines before "... more"
 };
 
 function renderRich(text: string) {
+  // linkify + mentions + hashtags (no markdown)
   const linkified = text.replace(
     /(https?:\/\/[^\s)]+)|(www\.[^\s)]+)/g,
     (m) => `<a href="${m.startsWith("http") ? m : `https://${m}`}" target="_blank" rel="noreferrer">${m}</a>`
@@ -20,21 +21,24 @@ function renderRich(text: string) {
   return hashed;
 }
 
-export default function PostPreview({ text, author, showFold = true, foldLines = 3 }: Props) {
+export default function PostPreview({
+  text,
+  author,
+  showFold = true,
+  linesBeforeFold = 3, // ← EXACT number of lines
+}: Props) {
   const [expanded, setExpanded] = useState(false);
 
-  // Cut after N non-empty lines (closer to LinkedIn behaviour)
+  // Cut after N lines (count every newline; no paragraph logic)
   const { above, below } = useMemo(() => {
-    if (!showFold || foldLines <= 0) return { above: text, below: "" };
+    if (!showFold || linesBeforeFold <= 0) return { above: text, below: "" };
     const lines = text.split("\n");
-    let count = 0, cutIndex = lines.length;
-    for (let i = 0; i < lines.length; i++) {
-      if (lines[i].trim().length > 0) count++;
-      if (count === foldLines) { cutIndex = i + 1; break; }
-    }
-    if (count < foldLines) return { above: text, below: "" };
-    return { above: lines.slice(0, cutIndex).join("\n"), below: lines.slice(cutIndex).join("\n") };
-  }, [text, showFold, foldLines]);
+    if (lines.length <= linesBeforeFold) return { above: text, below: "" };
+    return {
+      above: lines.slice(0, linesBeforeFold).join("\n"),
+      below: lines.slice(linesBeforeFold).join("\n"),
+    };
+  }, [text, showFold, linesBeforeFold]);
 
   function toHtml(block: string) {
     const rich = renderRich(block);
@@ -72,7 +76,7 @@ export default function PostPreview({ text, author, showFold = true, foldLines =
         </>
       )}
 
-      <div className="mt-3 text-xs text-gray-500">Preview — approximation of LinkedIn truncation (3 lines).</div>
+      <div className="mt-3 text-xs text-gray-500">Preview — fold after 3 lines (approx. LinkedIn behaviour).</div>
     </div>
   );
 }

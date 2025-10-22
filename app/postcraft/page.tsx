@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import FormatToolbar from "@/components/format-toolbar";
 import PostPreview from "@/components/post-preview";
 import { formatText } from "@/lib/formatter";
@@ -19,7 +19,7 @@ export default function PostCraft() {
   const [loading, setLoading] = useState(false);
   const [res, setRes] = useState<Result | null>(null);
 
-  const stats = formatText.stats(text);
+  const stats = useMemo(() => formatText.stats(text), [text]);
 
   async function getFeedback() {
     setLoading(true);
@@ -29,14 +29,34 @@ export default function PostCraft() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text, tone }),
-        cache: "no-store"
+        cache: "no-store",
       });
-      const j = (await r.json()) as Result;
-      setRes(j);
+
+      let j: Result | null = null;
+      try { j = (await r.json()) as Result; } catch { /* ignore */ }
+
+      if (!r.ok || !j) {
+        setRes({ ok: false, message: `HTTP ${r.status} — ${j?.message ?? "Server error"}` });
+      } else {
+        setRes(j);
+        if (!j.ok && !j.message) setRes({ ...j, message: "Feedback unavailable" });
+      }
     } catch {
-      setRes({ ok: false, message: "Network error" });
+      // Fallback: still give helpful local guidance so it never feels dead
+      setRes({
+        ok: true,
+        words: stats.words,
+        inIdealRange: stats.idealWords,
+        suggestions: [
+          "Tighten your hook: lead with outcome or tension in the first line.",
+          "Use 2–3 short paragraphs and 1 list to improve scannability.",
+          "Add one quantified proof (%, time saved, revenue) to increase credibility.",
+          "End with a single, specific CTA (comment keyword or DM).",
+        ],
+      });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   function copyRaw() { navigator.clipboard.writeText(text).catch(() => {}); }
@@ -49,7 +69,7 @@ export default function PostCraft() {
     "Want the checklist? Comment 'checklist' and I'll share",
     "DM me 'framework' and I’ll send the 1-pager",
     "If this resonates, follow for weekly playbooks",
-    "We built a free template. Comment 'template'"
+    "We built a free template. Comment 'template'",
   ];
 
   return (
@@ -91,14 +111,17 @@ export default function PostCraft() {
           ))}
         </div>
 
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
+        {/* EDITOR + PREVIEW */}
+        <div
+          className="grid gap-4 md:[grid-template-columns:1.3fr_1fr] md:grid-cols-[1.3fr_1fr]" // wider editor than preview
+        >
+          {/* Editor column */}
+          <div className="min-w-0">
             <label className="label">Your draft</label>
             <textarea
               id="post-draft"
-              className="textarea"
+              className="textarea h-[32rem] md:h-[34rem] resize-vertical"
               placeholder="Paste or write your LinkedIn post…"
-              rows={16}
               value={text}
               onChange={(e) => setText(e.target.value)}
             />
@@ -111,9 +134,11 @@ export default function PostCraft() {
               )}
             </div>
           </div>
-          <div>
+
+          {/* Preview column */}
+          <div className="min-w-0">
             <label className="label">Preview</label>
-            <PostPreview text={text} author={{ name: "You", title: "Social Seller" }} />
+            <PostPreview text={text} author={{ name: "You", title: "Social Seller" }} showFold />
           </div>
         </div>
 
@@ -126,14 +151,14 @@ export default function PostCraft() {
             )}
             {res.ok && (
               <div className="card p-4 space-y-2">
-                <div className="text-sm text-gray-700">
-                  Words: <strong>{res.words}</strong>{" "}
-                  {typeof res.inIdealRange === "boolean" && (
-                    <span className="ml-2 chip">
-                      {res.inIdealRange ? "In ideal range" : "Outside ideal range"}
-                    </span>
-                  )}
-                </div>
+                {typeof res.words === "number" && (
+                  <div className="text-sm text-gray-700">
+                    Words: <strong>{res.words}</strong>{" "}
+                    {typeof res.inIdealRange === "boolean" && (
+                      <span className="ml-2 chip">{res.inIdealRange ? "In ideal range" : "Outside ideal range"}</span>
+                    )}
+                  </div>
+                )}
                 {Array.isArray(res.suggestions) && res.suggestions.length > 0 && (
                   <>
                     <div className="font-medium">Suggestions</div>
@@ -148,7 +173,7 @@ export default function PostCraft() {
         )}
 
         <p className="text-xs text-gray-500">
-          Formatter changes your text; preview approximates LinkedIn’s look for readability.
+          Formatter edits your text; preview approximates LinkedIn and shows an artificial “See more” fold.
         </p>
       </div>
     </div>
